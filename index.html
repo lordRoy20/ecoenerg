@@ -1,19 +1,54 @@
 <!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>EcoEnerg - Energía solar</title>
+<html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>EcoEnergi - Tienda solar</title>
 <style>
-body{font-family:sans-serif;margin:0;text-align:center;background:#f6fbf3;color:#1f3d1f}
-header{background:#2e7d32;color:#fff;padding:40px 16px}
-a.btn{display:inline-block;background:#25d366;color:#fff;padding:14px 24px;border-radius:30px;text-decoration:none;font-weight:bold;margin:20px}
-section{padding:20px}
-</style>
-</head>
-<body>
-<header><h1>☀️ EcoEnerg</h1><p>Energía solar para tu familia</p></header>
-<section><h2>Demo</h2><p>Página de prueba. Precios y paquetes de ejemplo.</p></section>
-<a class="btn" href="https://wa.me/">Escríbenos por WhatsApp</a>
-</body>
-</html>
+*{box-sizing:border-box}body{margin:0;font-family:sans-serif;background:#f3f6f1;color:#1b2e1b}
+header{background:#2e7d32;color:#fff;padding:14px 16px;position:sticky;top:0;z-index:5;display:flex;justify-content:space-between;align-items:center}
+header h1{font-size:20px;margin:0}
+#cartbtn{background:#ffd54f;color:#222;border:0;border-radius:20px;padding:8px 14px;font-weight:bold}
+.cats{display:flex;gap:8px;overflow-x:auto;padding:12px 16px;background:#fff;position:sticky;top:56px;z-index:4}
+.cats button{border:1px solid #2e7d32;background:#fff;color:#2e7d32;border-radius:20px;padding:8px 14px;white-space:nowrap}
+.cats button.on{background:#2e7d32;color:#fff}
+#grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:12px}
+@media(min-width:700px){#grid{grid-template-columns:repeat(4,1fr)}}
+.card{background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 1px 5px #0002;display:flex;flex-direction:column}
+.img{height:120px;display:flex;align-items:center;justify-content:center;font-size:54px;background:#e3f1e0}
+.img img{width:100%;height:100%;object-fit:cover}
+.t{padding:8px 10px;flex:1}.t b{font-size:14px}.t p{font-size:12px;margin:4px 0;color:#556}
+.pr{color:#c62828;font-weight:bold;font-size:17px}
+.card button{margin:0 10px 10px;background:#2e7d32;color:#fff;border:0;border-radius:8px;padding:9px}
+#cart{display:none;position:fixed;inset:0;background:#0008;z-index:9}
+#cartbox{background:#fff;position:absolute;bottom:0;left:0;right:0;max-height:75%;overflow:auto;padding:16px;border-radius:16px 16px 0 0}
+.wa{display:block;background:#25d366;color:#fff;text-align:center;padding:13px;border-radius:30px;text-decoration:none;font-weight:bold;margin-top:12px}
+footer{text-align:center;font-size:12px;color:#667;padding:16px}
+</style></head><body>
+<header><h1>☀️ EcoEnergi</h1><button id="cartbtn" onclick="openCart()">🛒 <span id="n">0</span></button></header>
+<div class="cats" id="cats"></div><div id="grid"></div>
+<div id="cart" onclick="if(event.target===this)this.style.display='none'"><div id="cartbox"></div></div>
+<footer>Página de demostración. Marca, productos y precios de ejemplo.</footer>
+<script>
+var WA="5351663057";
+var P=[
+{id:1,c:"Inversores",n:"Inversor híbrido 12 kW",d:"Para todo el hogar",p:1800,e:"⚡",f:"inversor.jpg"},
+{id:2,c:"Baterías",n:"Batería de litio 15 kWh",d:"Energía también de noche",p:2850,e:"🔋",f:"bateria.jpg"},
+{id:3,c:"Combos",n:"Kit Combo 1",d:"1 inversor 12 kW, 1 batería 15 kWh, 8 paneles, 30 m de cable",p:5450,e:"📦",f:"combo1.jpg"},
+{id:4,c:"Combos",n:"Kit Combo 2",d:"1 inversor 12 kW, 2 baterías 15 kWh, 12 paneles, 60 m de cable",p:8800,e:"📦",f:"combo2.jpg"},
+{id:5,c:"Paneles",n:"Panel bifacial 620 W",d:"Doble vidrio, genera por ambas caras",p:165,e:"☀️",f:"panel1.jpg"},
+{id:6,c:"Paneles",n:"Panel bifacial 620 W N-Type",d:"Eficiencia 22,2 %",p:130,e:"☀️",f:"panel2.jpg"},
+{id:7,c:"Paneles",n:"Panel bifacial 575-600 W",d:"Half-cell, N-Type",p:120,e:"☀️",f:"panel3.jpg"}];
+var cat="Todos",cart={};
+function cats(){var l=["Todos"].concat(P.map(function(x){return x.c}).filter(function(v,i,a){return a.indexOf(v)==i}));
+document.getElementById("cats").innerHTML=l.map(function(c){return '<button class="'+(c==cat?'on':'')+'" onclick="setCat(\''+c+'\')">'+c+'</button>'}).join("")}
+function setCat(c){cat=c;cats();grid()}
+function grid(){document.getElementById("grid").innerHTML=P.filter(function(x){return cat=="Todos"||x.c==cat}).map(function(x){
+return '<div class="card"><div class="img"><img src="fotos/'+x.f+'" onerror="this.outerHTML=\''+x.e+'\'"></div><div class="t"><b>'+x.n+'</b><p>'+x.d+'</p><div class="pr">$'+x.p+' <small>(ejemplo)</small></div></div><button onclick="add('+x.id+')">Agregar</button></div>'}).join("")}
+function add(id){cart[id]=(cart[id]||0)+1;upd()}
+function upd(){var t=0;for(var k in cart)t+=cart[k];document.getElementById("n").textContent=t}
+function rem(k){delete cart[k];upd();openCart()}
+function openCart(){var h="",tot=0,L=["Hola, quiero cotizar:"];
+for(var k in cart){var x=P.find(function(y){return y.id==k});tot+=x.p*cart[k];L.push(cart[k]+" x "+x.n);
+h+='<p>'+cart[k]+' x '+x.n+' - $'+(x.p*cart[k])+' <button onclick="rem('+k+')">✖</button></p>'}
+if(!h){h="<p>Tu carrito está vacío.</p>"}else{L.push("Total estimado: $"+tot);
+h+='<b>Total estimado: $'+tot+'</b><a class="wa" href="https://wa.me/'+WA+'?text='+encodeURIComponent(L.join("\n"))+'">Pedir por WhatsApp</a>'}
+document.getElementById("cartbox").innerHTML=h;document.getElementById("cart").style.display="block"}
+cats();grid();
+</script></body></html>
