@@ -1,30 +1,123 @@
 <!DOCTYPE html>
-<html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>EcoEnergi - Tienda solar</title>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>EcoEnergi - Tienda Solar</title>
 <style>
-*{box-sizing:border-box}body{margin:0;font-family:sans-serif;background:#f3f6f1;color:#1b2e1b}
-header{background:#2e7d32;color:#fff;padding:14px 16px;position:sticky;top:0;z-index:5;display:flex;justify-content:space-between;align-items:center}
-header h1{font-size:20px;margin:0}
-#cartbtn{background:#ffd54f;color:#222;border:0;border-radius:20px;padding:8px 14px;font-weight:bold}
-.cats{display:flex;gap:8px;overflow-x:auto;padding:12px 16px;background:#fff;position:sticky;top:56px;z-index:4}
-.cats button{border:1px solid #2e7d32;background:#fff;color:#2e7d32;border-radius:20px;padding:8px 14px;white-space:nowrap}
-.cats button.on{background:#2e7d32;color:#fff}
-#grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:12px}
-@media(min-width:700px){#grid{grid-template-columns:repeat(4,1fr)}}
-.card{background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 1px 5px #0002;display:flex;flex-direction:column}
-.img{height:120px;display:flex;align-items:center;justify-content:center;font-size:54px;background:#e3f1e0}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#f5f6f8;color:#202820}
+button,input{font:inherit}
+header{height:62px;background:#087d48;color:white;display:flex;align-items:center;justify-content:space-between;padding:0 13px;position:sticky;top:0;z-index:20}
+.brand{font-size:21px;font-weight:bold}
+.brand span{color:#ffdf56}
+.hbtn{background:none;border:0;color:white;font-size:27px}
+#cartbtn{background:#ffdf56;color:#222;border:0;border-radius:22px;padding:9px 13px;font-weight:bold}
+.search{padding:11px;background:white}
+.search input{width:100%;border:1px solid #ddd;border-radius:25px;padding:12px 15px;background:#f6f7f7}
+.cats{display:flex;gap:8px;overflow-x:auto;padding:12px;background:white;position:sticky;top:62px;z-index:8}
+.cats button{border:1px solid #087d48;background:white;color:#087d48;border-radius:22px;padding:9px 14px;white-space:nowrap;font-size:13px}
+.cats button.on{background:#087d48;color:white}
+.hero{margin:12px;border-radius:16px;padding:20px 16px;background:linear-gradient(120deg,#064b32,#0b9e60);color:white;min-height:165px}
+.hero h2{font-size:23px;max-width:80%;margin:0 0 8px}
+.hero p{font-size:13px;line-height:1.5;max-width:80%}
+.hero button{background:#ffdf56;color:#222;border:0;border-radius:22px;padding:10px 17px;font-weight:bold}
+.benefits{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:12px}
+.benefits div{background:white;border-radius:10px;padding:12px 4px;text-align:center;font-size:11px}
+.benefits b{display:block;font-size:23px;margin-bottom:5px}
+.sectionTitle{font-size:18px;margin:19px 13px 11px}
+#grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;padding:0 11px 20px}
+@media(min-width:700px){#grid{grid-template-columns:repeat(4,1fr);gap:16px;padding:0 20px}}
+.card{background:white;border-radius:13px;overflow:hidden;box-shadow:0 2px 8px #0001;display:flex;flex-direction:column}
+.img{height:145px;background:#edf5ef;display:flex;align-items:center;justify-content:center;font-size:55px;position:relative}
 .img img{width:100%;height:100%;object-fit:cover}
-.t{padding:8px 10px;flex:1}.t b{font-size:14px}.t p{font-size:12px;margin:4px 0;color:#556}
-.pr{color:#c62828;font-weight:bold;font-size:17px}
-.card button{margin:0 10px 10px;background:#2e7d32;color:#fff;border:0;border-radius:8px;padding:9px}
-#cart{display:none;position:fixed;inset:0;background:#0008;z-index:9}
-#cartbox{background:#fff;position:absolute;bottom:0;left:0;right:0;max-height:75%;overflow:auto;padding:16px;border-radius:16px 16px 0 0}
-.wa{display:block;background:#25d366;color:#fff;text-align:center;padding:13px;border-radius:30px;text-decoration:none;font-weight:bold;margin-top:12px}
-footer{text-align:center;font-size:12px;color:#667;padding:16px}
-</style></head><body>
-<header><h1>☀️ EcoEnergi</h1><button id="cartbtn" onclick="openCart()">🛒 <span id="n">0</span></button></header>
-<div class="cats" id="cats"></div><div id="grid"></div>
-<div id="cart" onclick="if(event.target===this)this.style.display='none'"><div id="cartbox"></div></div>
-<footer>Página de demostración. Marca, productos y precios de ejemplo.</footer>
+.tag{position:absolute;top:8px;left:7px;background:#ffdf56;color:#222;padding:5px 8px;border-radius:6px;font-size:10px;font-weight:bold}
+.t{padding:10px;flex:1}
+.t b{font-size:14px;line-height:1.4;display:block}
+.t p{font-size:12px;color:#68736d;line-height:1.4;margin:6px 0}
+.pr{color:#e34c32;font-weight:bold;font-size:19px;margin-top:8px}
+.pr small{font-size:10px;color:#888;font-weight:normal}
+.card button{margin:0 9px 10px;background:#087d48;color:white;border:0;border-radius:22px;padding:10px;font-weight:bold}
+.empty{grid-column:1/-1;text-align:center;padding:30px;color:#777}
+#drawerbg{display:none;position:fixed;inset:0;background:#0008;z-index:50}
+#drawer{background:white;width:min(310px,85%);height:100%;padding:17px;overflow:auto}
+.drawerHead{background:#087d48;color:white;padding:18px;border-radius:12px;margin-bottom:13px}
+.drawerHead b{font-size:21px}
+.menuitem{display:flex;align-items:center;gap:13px;width:100%;border:0;background:white;text-align:left;padding:14px 8px;border-bottom:1px solid #eee;color:#28332c}
+.menuitem span{font-size:21px;width:27px}
+.menuLabel{font-size:11px;color:#89918b;font-weight:bold;margin:18px 8px 5px}
+#info{display:none;position:fixed;inset:0;background:#0008;z-index:60;align-items:center;justify-content:center;padding:20px}
+.infobox{background:white;border-radius:16px;padding:22px;width:100%;max-width:360px;text-align:center}
+.infobox button{background:#087d48;color:white;border:0;border-radius:22px;padding:11px 25px}
+#cart{display:none;position:fixed;inset:0;background:#0008;z-index:40}
+#cartbox{background:white;position:absolute;bottom:0;left:0;right:0;max-height:80%;overflow:auto;padding:18px;border-radius:18px 18px 0 0}
+.wa{display:block;background:#20c968;color:white;text-align:center;padding:14px;border-radius:30px;text-decoration:none;font-weight:bold;margin-top:14px}
+footer{text-align:center;font-size:12px;color:#788078;padding:22px}
+</style>
+</head>
+<body>
+
+<header>
+<button class="hbtn" onclick="menuOpen()">☰</button>
+<div class="brand">☀️ Eco<span>Energi</span></div>
+<button id="cartbtn" onclick="openCart()">🛒 <span id="n">0</span></button>
+</header>
+
+<div class="search">
+<input id="searchInput" type="search" placeholder="🔎 Buscar paneles, baterías, inversores..." oninput="searchProducts()">
+</div>
+
+<div class="cats" id="cats"></div>
+
+<section class="hero">
+<h2>¡Aprovecha la energía del sol!</h2>
+<p>Descubre paneles solares, inversores, baterías y soluciones para tu hogar.</p>
+<button onclick="setCat('Todos')">Ver productos →</button>
+</section>
+
+<div class="benefits">
+<div><b>☀️</b>Energía solar</div>
+<div><b>🔋</b>Almacenamiento</div>
+<div><b>⚡</b>Soluciones para tu hogar</div>
+</div>
+
+<h3 class="sectionTitle" id="productTitle">🔥 Productos destacados</h3>
+<div id="grid"></div>
+
+<div id="drawerbg" onclick="if(event.target===this)menuClose()">
+<nav id="drawer">
+<div class="drawerHead">
+<b>☀️ EcoEnergi</b>
+<p>Tu tienda de energía solar</p>
+</div>
+<button class="menuitem" onclick="goHome()"><span>🏠</span>Inicio</button>
+<button class="menuitem" onclick="showCategories()"><span>📂</span>Categorías</button>
+<button class="menuitem" onclick="showOffers()"><span>🔥</span>Ofertas</button>
+<button class="menuitem" onclick="menuClose();openCart()"><span>🛒</span>Mi carrito</button>
+<div class="menuLabel">PROGRAMA DE AFILIADOS</div>
+<button class="menuitem" onclick="affiliateInfo()"><span>🤝</span>Registrarme como afiliado</button>
+<button class="menuitem" onclick="affiliateInfo()"><span>📊</span>Mi panel de ganancias</button>
+<button class="menuitem" onclick="affiliateInfo()"><span>🔗</span>Mi enlace de promoción</button>
+<button class="menuitem" onclick="affiliateInfo()"><span>💰</span>Mis comisiones y pagos</button>
+<div class="menuLabel">AYUDA</div>
+<button class="menuitem" onclick="contactUs()"><span>💬</span>Atención al cliente</button>
+</nav>
+</div>
+
+<div id="info" onclick="if(event.target===this)closeInfo()">
+<div class="infobox">
+<h3 id="infoTitle">EcoEnergi</h3>
+<p id="infoText"></p>
+<button onclick="closeInfo()">Entendido</button>
+</div>
+</div>
+
+<div id="cart" onclick="if(event.target===this)this.style.display='none'">
+<div id="cartbox"></div>
+</div>
+
+<footer>☀️ EcoEnergi · Tu tienda de energía solar<br>Precios sujetos a confirmación.</footer>
+
 <script>
 var WA="5351663057";
 var P=[
@@ -34,21 +127,116 @@ var P=[
 {id:4,c:"Combos",n:"Kit Combo 2",d:"1 inversor 12 kW, 2 baterías 15 kWh, 12 paneles, 60 m de cable",p:8800,e:"📦",f:"combo2.jpg"},
 {id:5,c:"Paneles",n:"Panel bifacial 620 W",d:"Doble vidrio, genera por ambas caras",p:165,e:"☀️",f:"panel1.jpg"},
 {id:6,c:"Paneles",n:"Panel bifacial 620 W N-Type",d:"Eficiencia 22,2 %",p:130,e:"☀️",f:"panel2.jpg"},
-{id:7,c:"Paneles",n:"Panel bifacial 575-600 W",d:"Half-cell, N-Type",p:120,e:"☀️",f:"panel3.jpg"}];
+{id:7,c:"Paneles",n:"Panel bifacial 575-600 W",d:"Half-cell, N-Type",p:120,e:"☀️",f:"panel3.jpg"}
+];
+
 var cat="Todos",cart={};
-function cats(){var l=["Todos"].concat(P.map(function(x){return x.c}).filter(function(v,i,a){return a.indexOf(v)==i}));
-document.getElementById("cats").innerHTML=l.map(function(c){return '<button class="'+(c==cat?'on':'')+'" onclick="setCat(\''+c+'\')">'+c+'</button>'}).join("")}
-function setCat(c){cat=c;cats();grid()}
-function grid(){document.getElementById("grid").innerHTML=P.filter(function(x){return cat=="Todos"||x.c==cat}).map(function(x){
-return '<div class="card"><div class="img"><img src="fotos/'+x.f+'" onerror="this.outerHTML=\''+x.e+'\'"></div><div class="t"><b>'+x.n+'</b><p>'+x.d+'</p><div class="pr">$'+x.p+' <small>(ejemplo)</small></div></div><button onclick="add('+x.id+')">Agregar</button></div>'}).join("")}
-function add(id){cart[id]=(cart[id]||0)+1;upd()}
-function upd(){var t=0;for(var k in cart)t+=cart[k];document.getElementById("n").textContent=t}
-function rem(k){delete cart[k];upd();openCart()}
-function openCart(){var h="",tot=0,L=["Hola, quiero cotizar:"];
-for(var k in cart){var x=P.find(function(y){return y.id==k});tot+=x.p*cart[k];L.push(cart[k]+" x "+x.n);
-h+='<p>'+cart[k]+' x '+x.n+' - $'+(x.p*cart[k])+' <button onclick="rem('+k+')">✖</button></p>'}
-if(!h){h="<p>Tu carrito está vacío.</p>"}else{L.push("Total estimado: $"+tot);
-h+='<b>Total estimado: $'+tot+'</b><a class="wa" href="https://wa.me/'+WA+'?text='+encodeURIComponent(L.join("\n"))+'">Pedir por WhatsApp</a>'}
-document.getElementById("cartbox").innerHTML=h;document.getElementById("cart").style.display="block"}
-cats();grid();
-</script><script src="promo.js"></script></body></html>
+
+function cats(){
+var l=["Todos"].concat(P.map(function(x){return x.c}).filter(function(v,i,a){return a.indexOf(v)===i}));
+document.getElementById("cats").innerHTML=l.map(function(c){
+return '<button class="'+(c===cat?'on':'')+'" onclick="setCat(\''+c+'\')">'+c+'</button>'
+}).join("");
+}
+
+function setCat(c){
+cat=c;
+document.getElementById("searchInput").value="";
+cats();
+grid();
+}
+
+function grid(){
+var q=document.getElementById("searchInput").value.toLowerCase();
+var items=P.filter(function(x){
+return (cat==="Todos"||x.c===cat)&&
+(x.n+" "+x.d+" "+x.c).toLowerCase().includes(q);
+});
+document.getElementById("grid").innerHTML=items.length?items.map(function(x){
+return '<div class="card"><div class="img"><span class="tag">ECOENERGI</span><img src="fotos/'+x.f+'" onerror="this.outerHTML=\''+x.e+'\'"></div><div class="t"><b>'+x.n+'</b><p>'+x.d+'</p><div class="pr">$'+x.p+' <small>USD · ejemplo</small></div></div><button onclick="add('+x.id+')">Agregar al carrito</button></div>';
+}).join(""):'<div class="empty">No encontramos productos.</div>';
+}
+
+function searchProducts(){
+cat="Todos";
+cats();
+grid();
+}
+
+function add(id){
+cart[id]=(cart[id]||0)+1;
+upd();
+var b=document.getElementById("cartbtn");
+b.style.transform="scale(1.08)";
+setTimeout(function(){b.style.transform="scale(1)"},150);
+}
+
+function upd(){
+var t=0;
+for(var k in cart)t+=cart[k];
+document.getElementById("n").textContent=t;
+}
+
+function rem(k){
+delete cart[k];
+upd();
+openCart();
+}
+
+function openCart(){
+var h="",tot=0,L=["Hola, quiero cotizar:"];
+for(var k in cart){
+var x=P.find(function(y){return y.id==k});
+if(!x)continue;
+tot+=x.p*cart[k];
+L.push(cart[k]+" x "+x.n);
+h+='<p>'+cart[k]+' x '+x.n+' - $'+(x.p*cart[k])+' <button onclick="rem('+k+')">✖</button></p>';
+}
+if(!h){h="<h3>Tu carrito está vacío.</h3><p>¡Explora nuestros productos solares!</p>";}
+else{
+L.push("Total estimado: $"+tot);
+h+='<b>Total estimado: $'+tot+'</b><a class="wa" href="https://wa.me/'+WA+'?text='+encodeURIComponent(L.join("\n"))+'">Pedir por WhatsApp</a>';
+}
+document.getElementById("cartbox").innerHTML='<h3>🛒 Mi carrito</h3>'+h;
+document.getElementById("cart").style.display="block";
+}
+
+function menuOpen(){document.getElementById("drawerbg").style.display="block";}
+function menuClose(){document.getElementById("drawerbg").style.display="none";}
+function goHome(){
+cat="Todos";
+document.getElementById("searchInput").value="";
+cats();grid();menuClose();
+window.scrollTo(0,0);
+}
+function showCategories(){
+menuClose();
+document.getElementById("cats").scrollIntoView({behavior:"smooth"});
+}
+function showOffers(){
+menuClose();
+cat="Todos";cats();grid();
+document.getElementById("productTitle").textContent="🔥 Ofertas y productos";
+window.scrollTo(0,350);
+}
+function showInfo(title,msg){
+document.getElementById("infoTitle").textContent=title;
+document.getElementById("infoText").textContent=msg;
+document.getElementById("info").style.display="flex";
+}
+function closeInfo(){document.getElementById("info").style.display="none";}
+function affiliateInfo(){
+menuClose();
+showInfo("Programa de afiliados","¡Próximamente! Estamos preparando el registro de afiliados, enlaces personales, seguimiento de ventas y comisiones. Esta sección todavía no recibe registros ni calcula pagos.");
+}
+function contactUs(){
+menuClose();
+window.open("https://wa.me/"+WA+"?text="+encodeURIComponent("Hola, necesito información sobre EcoEnergi."),"_blank");
+}
+
+cats();
+grid();
+</script>
+<script src="promo.js"></script>
+</body>
+</html>
