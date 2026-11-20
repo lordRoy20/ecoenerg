@@ -1,0 +1,106 @@
+{
+  "version": 1,
+  "whatsapp": "5351663057",
+  "comision": 3,
+  "pagoAfiliados": "En persona (efectivo) o con tarjeta",
+  "promo": {
+    "activa": true,
+    "texto": "🔥 Promo: compras desde $1000 = 5% de descuento · desde $5000 = 10%",
+    "tramos": [
+      {
+        "min": 1000,
+        "pct": 5
+      },
+      {
+        "min": 5000,
+        "pct": 10
+      }
+    ]
+  },
+  "productos": [
+    {
+      "id": 1,
+      "cat": "Inversores",
+      "nombre": "Inversor híbrido 12 kW",
+      "desc": "Para todo el hogar",
+      "precio": 1800,
+      "antes": 0,
+      "etiqueta": "",
+      "foto": "inversor.jpg",
+      "icono": "⚡",
+      "activo": true
+    },
+    {
+      "id": 2,
+      "cat": "Baterías",
+      "nombre": "Batería de litio 15 kWh",
+      "desc": "Energía también de noche",
+      "precio": 2850,
+      "antes": 0,
+      "etiqueta": "",
+      "foto": "bateria.jpg",
+      "icono": "🔋",
+      "activo": true
+    },
+    {
+      "id": 3,
+      "cat": "Combos",
+      "nombre": "Kit Combo 1",
+      "desc": "1 inversor 12 kW, 1 batería 15 kWh, 8 paneles, 30 m de cable",
+      "precio": 5450,
+      "antes": 5900,
+      "etiqueta": "OFERTA",
+      "foto": "combo1.jpg",
+      "icono": "📦",
+      "activo": true
+    },
+    {
+      "id": 4,
+      "cat": "Combos",
+      "nombre": "Kit Combo 2",
+      "desc": "1 inversor 12 kW, 2 baterías 15 kWh, 12 paneles, 60 m de cable",
+      "precio": 8800,
+      "antes": 9600,
+      "etiqueta": "OFERTA",
+      "foto": "combo2.jpg",
+      "icono": "📦",
+      "activo": true
+    },
+    {
+      "id": 5,
+      "cat": "Paneles",
+      "nombre": "Panel bifacial 620 W",
+      "desc": "Doble vidrio, genera por ambas caras",
+      "precio": 165,
+      "antes": 0,
+      "etiqueta": "",
+      "foto": "panel1.jpg",
+      "icono": "☀️",
+      "activo": true
+    },
+    {
+      "id": 6,
+      "cat": "Paneles",
+      "nombre": "Panel bifacial 620 W N-Type",
+      "desc": "Eficiencia 22,2 %",
+      "precio": 130,
+      "antes": 0,
+      "etiqueta": "",
+      "foto": "panel2.jpg",
+      "icono": "☀️",
+      "activo": true
+    },
+    {
+      "id": 7,
+      "cat": "Paneles",
+      "nombre": "Panel bifacial 575-600 W",
+      "desc": "Half-cell, N-Type",
+      "precio": 120,
+      "antes": 0,
+      "etiqueta": "",
+      "foto": "panel3.jpg",
+      "icono": "☀️",
+      "activo": true
+    }
+  ]
+}

@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>EcoEnergi · Administrador</title>
+<style>
+:root{--y:#ffc400;--k:#0b0b0d;--k2:#15171c;--k3:#1d2028;--t:#f2f4f7;--m:#aab0bc;--r:#f87171;--v:#4ade80}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--k2);color:var(--t);padding-bottom:96px;line-height:1.4}
+header{background:var(--k);padding:14px 16px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:5;border-bottom:2px solid var(--y)}
+header h1{font-size:18px;color:var(--y)}
+header a,header button{color:#fff;font-size:13px;background:none;border:0;cursor:pointer;font-family:inherit}
+main{max-width:760px;margin:auto;padding:14px 12px}
+.card{background:var(--k3);border:1px solid #ffffff18;border-radius:14px;padding:16px;margin-bottom:14px}
+h2{font-size:17px;margin-bottom:6px;color:var(--y)}
+.n{color:var(--m);font-size:13px;margin-bottom:10px}
+label{display:block;font-size:12px;color:var(--m);margin:9px 0 3px}
+input[type=text],input[type=number],input[type=password]{width:100%;padding:11px;border-radius:9px;border:1px solid #ffffff2a;background:#0f1116;color:#fff;font-size:16px}
+input:focus{outline:2px solid var(--y)}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+button.b{font:inherit;cursor:pointer;border:0;border-radius:10px;padding:11px 14px;font-weight:700}
+.b1{background:var(--y);color:#111}.b2{background:#2b2f3a;color:#fff}.bd{background:#3b1a1a;color:#fca5a5}
+.pc{border:1px solid #ffffff22;border-radius:12px;padding:12px;margin-bottom:12px;background:#171a21}
+.pc.off{opacity:.55}
+.ph{display:flex;align-items:center;gap:10px;justify-content:space-between}
+.ph b{color:var(--y)}
+.ph label{display:flex;align-items:center;gap:6px;margin:0;color:#fff;font-size:13px}
+.ph input{width:20px;height:20px}
+.tr{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:end;margin-bottom:6px}
+.chk{display:flex;align-items:center;gap:8px;color:#fff;font-size:14px;margin:6px 0}
+.chk input{width:20px;height:20px}
+#barra{position:fixed;left:0;right:0;bottom:0;background:var(--k);border-top:2px solid var(--y);padding:10px 12px;display:flex;gap:10px;align-items:center;z-index:9}
+#estado{font-size:13px;flex:1}
+.ok{color:var(--v)}.err{color:var(--r)}
+.aviso{background:#3a2d05;border:1px solid #ffc40066;border-radius:10px;padding:10px;font-size:13px;color:#ffe08a;margin-bottom:12px}
+ol{margin:8px 0 8px 18px;font-size:13px;color:#d6dae2}
+li{margin:4px 0}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<header><h1>⚙️ Administrador EcoEnergi</h1><span><a href="index.html">Ver tienda →</a> <button id="salir" onclick="salir()" hidden>Salir</button></span></header>
+<main>
+
+<section id="login" class="card">
+ <h2>Entrar</h2>
+ <p class="n">Esta página es pública, pero solo funciona con tu token. No lo compartas con nadie.</p>
+ <label for="tk">Token de GitHub (grano fino, solo este repositorio)</label>
+ <input id="tk" type="password" autocomplete="off" placeholder="github_pat_...">
+ <label class="chk"><input id="rec" type="checkbox" checked> Recordar en este dispositivo</label>
+ <button class="b b1" style="width:100%;margin-top:8px" onclick="entrar()">Entrar</button>
+ <p id="msgLogin" class="n" style="margin-top:10px"></p>
+ <details style="margin-top:10px"><summary style="cursor:pointer;font-size:13px;color:var(--y)">¿Cómo creo el token?</summary>
+  <ol>
+   <li>En Chrome abre <b>github.com/settings/personal-access-tokens/new</b> (vista de escritorio).</li>
+   <li>Nombre: <b>ecoenergi-admin</b>. Caducidad: 90 días.</li>
+   <li><b>Repository access</b> → <b>Only select repositories</b> → elige <b>ecoenerg</b>.</li>
+   <li><b>Permissions</b> → <b>Repository permissions</b> → <b>Contents</b> → <b>Read and write</b>.</li>
+   <li><b>Generate token</b> y copia el que empieza con <b>github_pat_</b>.</li>
+  </ol>
+  <p class="n">No uses un token clásico con "repo": daría acceso a todos tus repositorios, incluido el privado del bot.</p>
+ </details>
+</section>
+
+<div id="panel" hidden>
+ <div class="aviso">Los cambios se publican al guardar y se ven en la tienda en 1-2 minutos. Los precios mostrados son de ejemplo hasta que pongas los reales.</div>
+
+ <section class="card">
+  <h2>💰 Productos</h2>
+  <p class="n">Cambia nombre, precio y descripción. “Precio anterior” (opcional) muestra el precio tachado y el % de descuento. “Foto” es el nombre del archivo en la carpeta fotos.</p>
+  <div id="lista"></div>
+  <button class="b b2" style="width:100%" onclick="addP()">➕ Agregar producto</button>
+  <datalist id="cats"></datalist>
+ </section>
+
+ <section class="card">
+  <h2>🔥 Promociones</h2>
+  <label class="chk"><input type="checkbox" id="pact" data-s="promo" data-k="activa"> Promoción activa</label>
+  <label for="ptxt">Texto de la franja amarilla (arriba de la tienda)</label>
+  <input id="ptxt" type="text" data-s="promo" data-k="texto" placeholder="🔥 Promo: ...">
+  <label>Descuentos automáticos por monto del carrito</label>
+  <div id="tramos"></div>
+  <button class="b b2" onclick="addT()">➕ Agregar tramo</button>
+ </section>
+
+ <section class="card">
+  <h2>⭐ Afiliados</h2>
+  <label for="com">Comisión (% del precio de cada producto vendido)</label>
+  <input id="com" type="number" inputmode="decimal" step="any" min="0" max="100" data-k="comision">
+  <label for="pag">Forma de pago a los afiliados</label>
+  <input id="pag" type="text" data-k="pagoAfiliados">
+ </section>
+
+ <section class="card">
+  <h2>📞 Contacto</h2>
+  <label for="wa">WhatsApp (con código de país, solo números)</label>
+  <input id="wa" type="text" inputmode="numeric" data-k="whatsapp">
+ </section>
+</div>
+</main>
+
+<div id="barra" hidden><button class="b b1" id="guardar" onclick="guardar()">💾 Guardar y publicar</button><span id="estado"></span></div>
+
+<script>
+var REPO="lordRoy20/ecoenerg",BR="main",FILE="datos.json";
+var DEF={"version": 1, "whatsapp": "5351663057", "comision": 3, "pagoAfiliados": "En persona (efectivo) o con tarjeta", "promo": {"activa": true, "texto": "🔥 Promo: compras desde $1000 = 5% de descuento · desde $5000 = 10%", "tramos": [{"min": 1000, "pct": 5}, {"min": 5000, "pct": 10}]}, "productos": [{"id": 1, "cat": "Inversores", "nombre": "Inversor híbrido 12 kW", "desc": "Para todo el hogar", "precio": 1800, "antes": 0, "etiqueta": "", "foto": "inversor.jpg", "icono": "⚡", "activo": true}, {"id": 2, "cat": "Baterías", "nombre": "Batería de litio 15 kWh", "desc": "Energía también de noche", "precio": 2850, "antes": 0, "etiqueta": "", "foto": "bateria.jpg", "icono": "🔋", "activo": true}, {"id": 3, "cat": "Combos", "nombre": "Kit Combo 1", "desc": "1 inversor 12 kW, 1 batería 15 kWh, 8 paneles, 30 m de cable", "precio": 5450, "antes": 5900, "etiqueta": "OFERTA", "foto": "combo1.jpg", "icono": "📦", "activo": true}, {"id": 4, "cat": "Combos", "nombre": "Kit Combo 2", "desc": "1 inversor 12 kW, 2 baterías 15 kWh, 12 paneles, 60 m de cable", "precio": 8800, "antes": 9600, "etiqueta": "OFERTA", "foto": "combo2.jpg", "icono": "📦", "activo": true}, {"id": 5, "cat": "Paneles", "nombre": "Panel bifacial 620 W", "desc": "Doble vidrio, genera por ambas caras", "precio": 165, "antes": 0, "etiqueta": "", "foto": "panel1.jpg", "icono": "☀️", "activo": true}, {"id": 6, "cat": "Paneles", "nombre": "Panel bifacial 620 W N-Type", "desc": "Eficiencia 22,2 %", "precio": 130, "antes": 0, "etiqueta": "", "foto": "panel2.jpg", "icono": "☀️", "activo": true}, {"id": 7, "cat": "Paneles", "nombre": "Panel bifacial 575-600 W", "desc": "Half-cell, N-Type", "precio": 120, "antes": 0, "etiqueta": "", "foto": "panel3.jpg", "icono": "☀️", "activo": true}]};
+var TK="",SHA=null,D=null,dirty=false;
+function $(i){return document.getElementById(i)}
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+function b64enc(str){var b=new TextEncoder().encode(str),s="";for(var i=0;i<b.length;i++)s+=String.fromCharCode(b[i]);return btoa(s)}
+function b64dec(b){var s=atob(String(b).replace(/\s/g,"")),a=new Uint8Array(s.length);for(var i=0;i<s.length;i++)a[i]=s.charCodeAt(i);return new TextDecoder().decode(a)}
+function api(method,path,body){return fetch("https://api.github.com/repos/"+REPO+path,{method:method,headers:{"Authorization":"Bearer "+TK,"Accept":"application/vnd.github+json","X-GitHub-Api-Version":"2022-11-28"},body:body?JSON.stringify(body):undefined})}
+function msg(t,c){["msgLogin","estado"].forEach(function(i){var e=$(i);e.textContent=t;e.className=(i=="msgLogin"?"n ":"")+(c||"")})}
+
+async function entrar(auto){
+ TK=(auto&&typeof auto=="string")?auto:$("tk").value.trim();
+ if(!TK){msg("Pega tu token.","err");return}
+ msg("Verificando…");
+ try{
+  var r0=await api("GET","");
+  if(r0.status==401){TK="";quitar();msg("Token no válido o vencido. Crea uno nuevo.","err");return}
+  if(r0.status==404||r0.status==403){TK="";quitar();msg("El token no tiene acceso a "+REPO+". Debe ser de ese repositorio.","err");return}
+  if(!r0.ok){TK="";msg("Error "+r0.status+" al conectar.","err");return}
+  var r=await api("GET","/contents/"+FILE+"?ref="+BR);
+  if(r.status==404){D=JSON.parse(JSON.stringify(DEF));SHA=null}
+  else if(r.ok){var j=await r.json();SHA=j.sha;D=JSON.parse(b64dec(j.content))}
+  else{TK="";msg("Error "+r.status+" al leer datos.","err");return}
+  try{if($("rec").checked)localStorage.setItem("eco_tk",TK)}catch(e){}
+  mostrar();
+ }catch(e){TK="";msg("No se pudo conectar. Revisa tu internet.","err")}
+}
+function quitar(){try{localStorage.removeItem("eco_tk")}catch(e){}}
+function salir(){quitar();TK="";location.reload()}
+
+function mostrar(){
+ if(!D.promo)D.promo={activa:false,texto:"",tramos:[]};if(!D.promo.tramos)D.promo.tramos=[];if(!D.productos)D.productos=[];
+ $("login").hidden=true;$("panel").hidden=false;$("barra").hidden=false;$("salir").hidden=false;
+ $("pact").checked=D.promo.activa!==false;$("ptxt").value=D.promo.texto||"";
+ $("com").value=D.comision==null?"":D.comision;$("pag").value=D.pagoAfiliados||"";$("wa").value=D.whatsapp||"";
+ lista();tramos();msg("");
+}
+var CAMPOS=[["nombre","Nombre","text"],["desc","Descripción","text"],["cat","Categoría","text"],["precio","Precio (USD)","number"],["antes","Precio anterior (opcional)","number"],["etiqueta","Etiqueta (ej. OFERTA)","text"],["foto","Foto (archivo en fotos/)","text"],["icono","Icono si no hay foto","text"]];
+function lista(){
+ var cs=D.productos.map(function(x){return x.cat}).filter(function(v,i,a){return v&&a.indexOf(v)==i});
+ $("cats").innerHTML=cs.map(function(c){return '<option value="'+esc(c)+'">'}).join("");
+ $("lista").innerHTML=D.productos.map(function(p,i){
+  var h='<div class="pc'+(p.activo===false?' off':'')+'"><div class="ph"><b>#'+esc(p.id)+'</b><label><input type="checkbox" data-s="p" data-i="'+i+'" data-k="activo"'+(p.activo!==false?' checked':'')+'> Visible</label><button class="b bd" onclick="delP('+i+')">🗑 Quitar</button></div>';
+  CAMPOS.forEach(function(c,j){
+   var num=c[2]=="number";
+   h+=(j==3||j==5?'<div class="row">':'')+'<div><label>'+c[1]+'</label><input type="'+(num?'number':'text')+'"'+(num?' inputmode="decimal" step="any" min="0"':'')+(c[0]=="cat"?' list="cats"':'')+' data-s="p" data-i="'+i+'" data-k="'+c[0]+'" value="'+esc(p[c[0]]==null?"":p[c[0]])+'"></div>'+(j==4||j==6?'</div>':'');
+  });
+  return h+'</div>'}).join("")||'<p class="n">No hay productos. Agrega el primero.</p>';
+}
+function tramos(){
+ $("tramos").innerHTML=D.promo.tramos.map(function(t,i){
+  return '<div class="tr"><div><label>Desde (USD)</label><input type="number" inputmode="decimal" step="any" min="0" data-s="t" data-i="'+i+'" data-k="min" value="'+esc(t.min)+'"></div><div><label>Descuento (%)</label><input type="number" inputmode="decimal" step="any" min="0" max="100" data-s="t" data-i="'+i+'" data-k="pct" value="'+esc(t.pct)+'"></div><button class="b bd" onclick="delT('+i+')">🗑</button></div>'}).join("")||'<p class="n">Sin descuentos por monto.</p>';
+}
+function addP(){var id=D.productos.reduce(function(a,p){return Math.max(a,+p.id||0)},0)+1;D.productos.push({id:id,cat:"",nombre:"",desc:"",precio:"",antes:"",etiqueta:"",foto:"",icono:"📦",activo:true});dirty=true;lista();var c=$("lista").querySelectorAll(".pc");if(c.length)c[c.length-1].scrollIntoView({behavior:"smooth"})}
+function delP(i){if(confirm("¿Quitar este producto de la tienda? (Si solo quieres ocultarlo, desmarca “Visible”.)")){D.productos.splice(i,1);dirty=true;lista()}}
+function addT(){D.promo.tramos.push({min:"",pct:""});dirty=true;tramos()}
+function delT(i){D.promo.tramos.splice(i,1);dirty=true;tramos()}
+
+function leer(e){
+ var t=e.target,k=t.getAttribute&&t.getAttribute("data-k");if(!k)return;
+ var i=t.getAttribute("data-i"),s=t.getAttribute("data-s");
+ var v=t.type=="checkbox"?t.checked:(t.type=="number"?(t.value===""?"":parseFloat(t.value)):t.value);
+ if(s=="p"){D.productos[i][k]=v;if(k=="activo"){t.closest(".pc").className="pc"+(v?"":" off")}}
+ else if(s=="t")D.promo.tramos[i][k]=v;
+ else if(s=="promo")D.promo[k]=v;
+ else D[k]=(k=="whatsapp"?String(v).replace(/\D/g,""):v);
+ dirty=true;
+}
+document.addEventListener("input",leer);document.addEventListener("change",leer);
+window.addEventListener("beforeunload",function(e){if(dirty){e.preventDefault();e.returnValue=""}});
+
+function validar(){
+ for(var i=0;i<D.productos.length;i++){var p=D.productos[i],n="Producto #"+p.id;
+  if(!String(p.nombre||"").trim())return n+": falta el nombre.";
+  if(p.precio===""||isNaN(+p.precio)||+p.precio<=0)return n+" ("+p.nombre+"): el precio debe ser mayor que 0.";
+  if(p.antes!==""&&p.antes!=null&&(isNaN(+p.antes)||+p.antes<0))return n+" ("+p.nombre+"): precio anterior no válido.";
+  if(!String(p.cat||"").trim())return n+" ("+p.nombre+"): falta la categoría."}
+ for(var j=0;j<D.promo.tramos.length;j++){var t=D.promo.tramos[j];
+  if(t.min===""||t.pct===""||+t.min<=0||+t.pct<=0||+t.pct>100)return "Descuento por monto #"+(j+1)+": revisa “Desde” (mayor que 0) y el % (entre 1 y 100)."}
+ if(D.comision===""||isNaN(+D.comision)||+D.comision<0||+D.comision>100)return "La comisión debe estar entre 0 y 100.";
+ if(!/^\d{8,15}$/.test(String(D.whatsapp||"")))return "El WhatsApp debe tener entre 8 y 15 números (con código de país).";
+ return "";
+}
+async function guardar(){
+ var e=validar();if(e){msg("⚠️ "+e,"err");return}
+ D.productos.forEach(function(p){p.id=+p.id;p.precio=+p.precio;p.antes=(p.antes===""||p.antes==null)?0:+p.antes});
+ D.promo.tramos.forEach(function(t){t.min=+t.min;t.pct=+t.pct});D.comision=+D.comision;
+ $("guardar").disabled=true;msg("Publicando…");
+ try{
+  var body={message:"Admin: actualizar tienda",content:b64enc(JSON.stringify(D,null,2)+"\n"),branch:BR};if(SHA)body.sha=SHA;
+  var r=await api("PUT","/contents/"+FILE,body);
+  if(r.ok){var j=await r.json();SHA=j.content.sha;dirty=false;msg("✅ Publicado. La tienda se actualiza en 1-2 minutos.","ok")}
+  else if(r.status==409||r.status==422){msg("El archivo cambió mientras editabas. Recarga la página y repite el cambio.","err")}
+  else if(r.status==401){msg("El token venció. Sal y entra con uno nuevo.","err")}
+  else if(r.status==403||r.status==404){msg("El token no tiene permiso de escritura (Contents: Read and write) en este repositorio.","err")}
+  else msg("Error "+r.status+" al guardar.","err");
+ }catch(x){msg("No se pudo conectar. Revisa tu internet.","err")}
+ $("guardar").disabled=false;
+}
+
+try{var g=localStorage.getItem("eco_tk");if(g)entrar(g)}catch(e){}
+</script>
+</body>
+</html>0
+
