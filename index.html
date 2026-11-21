@@ -349,7 +349,9 @@ function apply(){
  $("tel").href=waLink(msg);$("tel").textContent="📞 "+num;
  $("tel2").href=waLink(msg);$("tel2").textContent=num;
  $("heroWa").href=waLink(msg);$("wf").href=waLink(msg);
- $("afiWa").href=waLink("Hola, quiero ser afiliado de EcoEnergi");
+ var fu=String(D.formularioAfiliados||"").trim();
+ if(/^https:\/\//i.test(fu)){$("afiWa").href=fu;$("afiWa").target="_blank";$("afiWa").rel="noopener";$("afiWa").textContent="📝 Registrarme como afiliado →"}
+ else{$("afiWa").href=waLink("Hola, quiero ser afiliado de EcoEnergi")}
  drawCats();render();
 }
 

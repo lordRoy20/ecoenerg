@@ -102,6 +102,18 @@ li{margin:4px 0}
   <h2>📞 Contacto</h2>
   <label for="wa">WhatsApp (con código de país, solo números)</label>
   <input id="wa" type="text" inputmode="numeric" data-k="whatsapp">
+  <label for="fu">Enlace del formulario de registro de afiliados (Google Forms, opcional)</label>
+  <input id="fu" type="text" data-k="formularioAfiliados" placeholder="https://forms.gle/...">
+  <p class="n" style="margin-top:6px">Si lo pones, el botón “Quiero ser afiliado” de la tienda abre ese formulario. Si lo dejas vacío, abre WhatsApp.</p>
+ </section>
+
+ <section class="card">
+  <h2>🔗 Enlace para un afiliado</h2>
+  <p class="n">Escribe el código que le diste (letras y números, sin espacios) y copia su enlace para mandárselo.</p>
+  <label for="cod">Código del afiliado</label>
+  <input id="cod" type="text" placeholder="CARLOS01" maxlength="20" autocapitalize="characters" oninput="enlace()">
+  <p id="enl" class="n" style="word-break:break-all;color:#fff;margin-top:10px"></p>
+  <button class="b b2" style="width:100%" onclick="copiarEnlace()">📋 Copiar enlace</button>
  </section>
 </div>
 </main>
@@ -143,7 +155,7 @@ function mostrar(){
  if(!D.promo)D.promo={activa:false,texto:"",tramos:[]};if(!D.promo.tramos)D.promo.tramos=[];if(!D.productos)D.productos=[];
  $("login").hidden=true;$("panel").hidden=false;$("barra").hidden=false;$("salir").hidden=false;
  $("pact").checked=D.promo.activa!==false;$("ptxt").value=D.promo.texto||"";
- $("com").value=D.comision==null?"":D.comision;$("pag").value=D.pagoAfiliados||"";$("wa").value=D.whatsapp||"";
+ $("com").value=D.comision==null?"":D.comision;$("pag").value=D.pagoAfiliados||"";$("wa").value=D.whatsapp||"";$("fu").value=D.formularioAfiliados||"";
  lista();tramos();msg("");
 }
 var PREV={};
@@ -195,6 +207,11 @@ function delP(i){if(confirm("¿Quitar este producto de la tienda? (Si solo quier
 function addT(){D.promo.tramos.push({min:"",pct:""});dirty=true;tramos()}
 function delT(i){D.promo.tramos.splice(i,1);dirty=true;tramos()}
 
+function codigo(){return $("cod").value.replace(/[^A-Za-z0-9_-]/g,"").slice(0,20)}
+function enlace(){var c=codigo();$("enl").textContent=c?location.origin+location.pathname.replace(/admin\.html$/,"")+"?ref="+c:""}
+function copiarEnlace(){var t=$("enl").textContent;if(!t){msg("Escribe primero el código del afiliado.","err");return}
+ var ok=function(){msg("✅ Enlace copiado.","ok")},no=function(){msg("No se pudo copiar. Mantén pulsado el enlace y cópialo.","err")};
+ try{navigator.clipboard.writeText(t).then(ok,no)}catch(e){no()}}
 function leer(e){
  var t=e.target,k=t.getAttribute&&t.getAttribute("data-k");if(!k)return;
  var i=t.getAttribute("data-i"),s=t.getAttribute("data-s");
@@ -217,6 +234,7 @@ function validar(){
  for(var j=0;j<D.promo.tramos.length;j++){var t=D.promo.tramos[j];
   if(t.min===""||t.pct===""||+t.min<=0||+t.pct<=0||+t.pct>100)return "Descuento por monto #"+(j+1)+": revisa “Desde” (mayor que 0) y el % (entre 1 y 100)."}
  if(D.comision===""||isNaN(+D.comision)||+D.comision<0||+D.comision>100)return "La comisión debe estar entre 0 y 100.";
+ if(D.formularioAfiliados&&!/^https:\/\//i.test(String(D.formularioAfiliados).trim()))return "El enlace del formulario debe empezar con https://";
  if(!/^\d{8,15}$/.test(String(D.whatsapp||"")))return "El WhatsApp debe tener entre 8 y 15 números (con código de país).";
  return "";
 }
