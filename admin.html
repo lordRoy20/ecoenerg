@@ -38,6 +38,11 @@ button.b{font:inherit;cursor:pointer;border:0;border-radius:10px;padding:11px 14
 ol{margin:8px 0 8px 18px;font-size:13px;color:#d6dae2}
 li{margin:4px 0}
 [hidden]{display:none!important}
+.pn{color:#fff;font-weight:700;margin:8px 0 2px;font-size:15px}
+.fb{display:flex;align-items:center;gap:12px;background:#0f1116;border:2px dashed var(--y);border-radius:12px;padding:10px;margin:10px 0;cursor:pointer;color:#fff;font-size:14px}
+.fp{width:84px;height:84px;border-radius:10px;background:#fff;display:grid;place-items:center;font-size:38px;overflow:hidden;flex:none}
+.fp img{width:100%;height:100%;object-fit:contain}
+.ft{display:block;min-width:0}.ft b{display:block;color:var(--y);font-size:15px}.ft small{display:block;color:var(--m);font-size:12px;word-break:break-all;margin-top:3px}
 </style>
 </head>
 <body>
@@ -69,7 +74,7 @@ li{margin:4px 0}
 
  <section class="card">
   <h2>💰 Productos</h2>
-  <p class="n">Cambia nombre, precio y descripción. “Precio anterior” (opcional) muestra el precio tachado y el % de descuento. “Foto” es el nombre del archivo en la carpeta fotos.</p>
+  <p class="n">Cambia nombre, precio y descripción. “Precio anterior” (opcional) muestra el precio tachado y el % de descuento. Para la foto, toca el recuadro amarillo de cada producto y elige la imagen de tu galería.</p>
   <div id="lista"></div>
   <button class="b b2" style="width:100%" onclick="addP()">➕ Agregar producto</button>
   <datalist id="cats"></datalist>
@@ -141,18 +146,46 @@ function mostrar(){
  $("com").value=D.comision==null?"":D.comision;$("pag").value=D.pagoAfiliados||"";$("wa").value=D.whatsapp||"";
  lista();tramos();msg("");
 }
-var CAMPOS=[["nombre","Nombre","text"],["desc","Descripción","text"],["cat","Categoría","text"],["precio","Precio (USD)","number"],["antes","Precio anterior (opcional)","number"],["etiqueta","Etiqueta (ej. OFERTA)","text"],["foto","Foto (archivo en fotos/)","text"],["icono","Icono si no hay foto","text"]];
+var PREV={};
+function campo(i,p,k,et,tipo,extra){var num=tipo=="number";return '<div><label>'+et+'</label><input type="'+tipo+'"'+(num?' inputmode="decimal" step="any" min="0"':'')+(extra||'')+' data-s="p" data-i="'+i+'" data-k="'+k+'" value="'+esc(p[k]==null?"":p[k])+'"></div>'}
+function fotoSrc(p){return p.foto?(PREV[p.foto]||"fotos/"+encodeURIComponent(p.foto)):""}
 function lista(){
  var cs=D.productos.map(function(x){return x.cat}).filter(function(v,i,a){return v&&a.indexOf(v)==i});
  $("cats").innerHTML=cs.map(function(c){return '<option value="'+esc(c)+'">'}).join("");
  $("lista").innerHTML=D.productos.map(function(p,i){
-  var h='<div class="pc'+(p.activo===false?' off':'')+'"><div class="ph"><b>#'+esc(p.id)+'</b><label><input type="checkbox" data-s="p" data-i="'+i+'" data-k="activo"'+(p.activo!==false?' checked':'')+'> Visible</label><button class="b bd" onclick="delP('+i+')">🗑 Quitar</button></div>';
-  CAMPOS.forEach(function(c,j){
-   var num=c[2]=="number";
-   h+=(j==3||j==5?'<div class="row">':'')+'<div><label>'+c[1]+'</label><input type="'+(num?'number':'text')+'"'+(num?' inputmode="decimal" step="any" min="0"':'')+(c[0]=="cat"?' list="cats"':'')+' data-s="p" data-i="'+i+'" data-k="'+c[0]+'" value="'+esc(p[c[0]]==null?"":p[c[0]])+'"></div>'+(j==4||j==6?'</div>':'');
-  });
+  var src=fotoSrc(p);
+  var prev=src?'<img src="'+esc(src)+'" alt="" data-e="'+esc(p.icono||"📦")+'" onerror="this.parentNode.textContent=this.getAttribute(\'data-e\')">':esc(p.icono||"📷");
+  var h='<div class="pc'+(p.activo===false?' off':'')+'"><div class="ph"><b>#'+esc(p.id)+'</b><label><input type="checkbox" data-s="p" data-i="'+i+'" data-k="activo"'+(p.activo!==false?' checked':'')+'> Visible</label><button class="b bd" onclick="delP('+i+')">🗑 Quitar</button></div><div class="pn">'+esc(p.nombre||"Producto nuevo")+'</div>';
+  h+='<label class="fb"><span class="fp">'+prev+'</span><span class="ft"><b>📷 '+(p.foto?'Cambiar foto':'Elegir foto de la galería')+'</b><small id="fs'+i+'">'+(p.foto?esc(p.foto):'Toca aquí y escoge la foto del producto')+'</small></span><input type="file" accept="image/*" hidden onchange="subirFoto(this,'+i+')"></label>';
+  if(p.foto)h+='<button class="b bd" style="margin:0 0 8px" onclick="quitarFoto('+i+')">Quitar foto</button>';
+  h+=campo(i,p,"nombre","Nombre","text")+campo(i,p,"desc","Descripción","text")+campo(i,p,"cat","Categoría","text",' list="cats"')+'<div class="row">'+campo(i,p,"precio","Precio (USD)","number")+campo(i,p,"antes","Precio anterior (opcional)","number")+'</div><div class="row">'+campo(i,p,"etiqueta","Etiqueta (ej. OFERTA)","text")+campo(i,p,"icono","Icono si no hay foto","text")+'</div>';
   return h+'</div>'}).join("")||'<p class="n">No hay productos. Agrega el primero.</p>';
 }
+/* fotos: reduce la imagen de la galería y la sube a la carpeta fotos/ del repositorio */
+function reducir(file,max){return new Promise(function(ok,no){var u=URL.createObjectURL(file),im=new Image();
+ im.onload=function(){var w=im.naturalWidth,h=im.naturalHeight,s=Math.min(1,max/Math.max(w,h)),c=document.createElement("canvas");c.width=Math.max(1,Math.round(w*s));c.height=Math.max(1,Math.round(h*s));
+  var x=c.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,c.width,c.height);x.drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(u);
+  c.toBlob(function(b){b?ok(b):no(new Error("blob"))},"image/jpeg",.85)};
+ im.onerror=function(){URL.revokeObjectURL(u);no(new Error("img"))};im.src=u})}
+function aB64(blob){return new Promise(function(ok,no){var r=new FileReader();r.onload=function(){ok(String(r.result).split(",")[1])};r.onerror=no;r.readAsDataURL(blob)})}
+async function subirFoto(inp,i){
+ var f=inp.files&&inp.files[0];inp.value="";if(!f)return;
+ var p=D.productos[i],st=$("fs"+i);
+ if(!/^image\//.test(f.type)){st.textContent="Eso no es una imagen.";return}
+ st.textContent="Preparando foto…";
+ try{
+  var blob=await reducir(f,1000);
+  st.textContent="Subiendo foto…";
+  var name="p"+(p.id||i)+"-"+Date.now().toString(36)+".jpg";
+  var r=await api("PUT","/contents/fotos/"+name,{message:"Admin: foto "+name,content:await aB64(blob),branch:BR});
+  if(r.ok){PREV[name]=URL.createObjectURL(blob);p.foto=name;dirty=true;lista();msg("📷 Foto subida. Pulsa “Guardar y publicar” para que se vea en la tienda.","ok")}
+  else if(r.status==401){st.textContent="El token venció. Sal y entra con uno nuevo."}
+  else if(r.status==403||r.status==404){st.textContent="El token no tiene permiso de escritura (Contents: Read and write)."}
+  else{st.textContent="Error "+r.status+" al subir la foto."}
+ }catch(e){st.textContent="No se pudo subir la foto. Prueba con otra imagen o revisa tu internet."}
+}
+function quitarFoto(i){D.productos[i].foto="";dirty=true;lista()}
+
 function tramos(){
  $("tramos").innerHTML=D.promo.tramos.map(function(t,i){
   return '<div class="tr"><div><label>Desde (USD)</label><input type="number" inputmode="decimal" step="any" min="0" data-s="t" data-i="'+i+'" data-k="min" value="'+esc(t.min)+'"></div><div><label>Descuento (%)</label><input type="number" inputmode="decimal" step="any" min="0" max="100" data-s="t" data-i="'+i+'" data-k="pct" value="'+esc(t.pct)+'"></div><button class="b bd" onclick="delT('+i+')">🗑</button></div>'}).join("")||'<p class="n">Sin descuentos por monto.</p>';
@@ -166,7 +199,7 @@ function leer(e){
  var t=e.target,k=t.getAttribute&&t.getAttribute("data-k");if(!k)return;
  var i=t.getAttribute("data-i"),s=t.getAttribute("data-s");
  var v=t.type=="checkbox"?t.checked:(t.type=="number"?(t.value===""?"":parseFloat(t.value)):t.value);
- if(s=="p"){D.productos[i][k]=v;if(k=="activo"){t.closest(".pc").className="pc"+(v?"":" off")}}
+ if(s=="p"){D.productos[i][k]=v;if(k=="activo"){t.closest(".pc").className="pc"+(v?"":" off")}if(k=="nombre"){var pn=t.closest(".pc").querySelector(".pn");if(pn)pn.textContent=v||"Producto nuevo"}}
  else if(s=="t")D.promo.tramos[i][k]=v;
  else if(s=="promo")D.promo[k]=v;
  else D[k]=(k=="whatsapp"?String(v).replace(/\D/g,""):v);
@@ -207,5 +240,4 @@ async function guardar(){
 try{var g=localStorage.getItem("eco_tk");if(g)entrar(g)}catch(e){}
 </script>
 </body>
-</html>0
-
+</html>
