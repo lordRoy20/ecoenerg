@@ -185,6 +185,17 @@ footer a{color:var(--y)}
  footer .wrap{grid-template-columns:repeat(3,1fr)}
 }
 @media(min-width:1000px){#grid{grid-template-columns:repeat(5,1fr)}}
+.ovl{display:none;position:fixed;inset:0;background:#000b;z-index:70}
+.sheet{background:#fff;color:#111;position:absolute;bottom:0;left:0;right:0;max-height:92%;overflow:auto;padding:18px 16px 26px;border-radius:18px 18px 0 0;max-width:560px;margin:auto}
+.sheet h4{font-size:20px;margin-bottom:6px}
+.sheet p{font-size:14px;color:#475569;margin-bottom:10px;line-height:1.4}
+.sheet label{font-size:12px;color:#475569;font-weight:700;display:block}
+.sheet input,.sheet select{width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:10px;font-size:16px;margin:4px 0 12px;background:#fff;color:#111}
+.sheet .wa{width:100%;border:0;cursor:pointer;font-size:16px;margin-top:8px;font-family:inherit}
+.sheet .sec2{background:#eef1f6;color:#111}
+.sheet .x{float:right;background:#eee;border-radius:50%;width:32px;height:32px;color:#111}
+.lnk{background:#fff7d6;border:2px dashed #e6a800;border-radius:12px;padding:12px;word-break:break-all;font-weight:700;margin:10px 0;color:#111}
+.aerr{color:#b91c1c;font-weight:700;font-size:14px;margin:6px 0;min-height:1px}.aerr.ok{color:#15803d}
 @media(prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
 </style>
 </head>
@@ -315,6 +326,7 @@ footer a{color:var(--y)}
 
 <a class="wf" id="wf" href="#" aria-label="WhatsApp"><svg viewBox="0 0 32 32" fill="#fff" aria-hidden="true"><path d="M16 4C9.4 4 4 8.6 4 14.3c0 3.2 1.7 6 4.3 7.9L7 27.5l5.2-2.8c1.2.3 2.5.5 3.8.5 6.6 0 12-4.6 12-10.3S22.6 4 16 4z"/><circle cx="10.5" cy="14.5" r="1.7" fill="#25d366"/><circle cx="16" cy="14.5" r="1.7" fill="#25d366"/><circle cx="21.5" cy="14.5" r="1.7" fill="#25d366"/></svg></a>
 <div id="cart" onclick="if(event.target===this)this.style.display='none'"><div id="box"></div></div>
+<div id="afiOv" class="ovl" onclick="if(event.target===this)afiCerrar()"><div id="afiBox" class="sheet"></div></div>
 <div id="toast"></div>
 
 <script>
@@ -349,9 +361,10 @@ function apply(){
  $("tel").href=waLink(msg);$("tel").textContent="📞 "+num;
  $("tel2").href=waLink(msg);$("tel2").textContent=num;
  $("heroWa").href=waLink(msg);$("wf").href=waLink(msg);
- var fu=String(D.formularioAfiliados||"").trim();
- if(/^https:\/\//i.test(fu)){$("afiWa").href=fu;$("afiWa").target="_blank";$("afiWa").rel="noopener";$("afiWa").textContent="📝 Registrarme como afiliado →"}
- else{$("afiWa").href=waLink("Hola, quiero ser afiliado de EcoEnergi")}
+ var fb=D.firebase,fu=String(D.formularioAfiliados||"").trim(),ab=$("afiWa");
+ if(fb&&fb.apiKey&&fb.authDomain&&fb.projectId&&fb.appId){ab.href="#afiliados";ab.removeAttribute("target");ab.textContent="🔐 Registrarme / Ver mi enlace →";ab.onclick=function(e){e.preventDefault();afiAbrir()}}
+ else if(/^https:\/\//i.test(fu)){ab.href=fu;ab.target="_blank";ab.rel="noopener";ab.textContent="📝 Registrarme como afiliado →";ab.onclick=null}
+ else{ab.href=waLink("Hola, quiero ser afiliado de EcoEnergi");ab.onclick=null}
  drawCats();render();
 }
 
@@ -415,6 +428,70 @@ function mover(d){show(cur+d)}
 /* arranque: primero los datos de respaldo, luego datos.json (si existe) */
 apply();
 try{fetch("datos.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.json():null}).then(function(d){if(d&&d.productos&&d.productos.length){D=d;apply()}}).catch(function(){})}catch(e){}
+</script>
+<script>
+/* ===== Registro automatico de afiliados (cuenta de Google + Firebase) ===== */
+async function fbCrear(cfg){
+ if(window.__FB_MOCK)return window.__FB_MOCK;
+ var B="https://www.gstatic.com/firebasejs/10.12.2/";
+ var A=await import(B+"firebase-app.js"),Au=await import(B+"firebase-auth.js"),S=await import(B+"firebase-firestore.js");
+ var app=A.getApps().length?A.getApp():A.initializeApp(cfg),auth=Au.getAuth(app),db=S.getFirestore(app);
+ return{
+  onAuth:function(cb){return Au.onAuthStateChanged(auth,function(u){cb(u?{uid:u.uid,email:u.email,name:u.displayName||""}:null)})},
+  signIn:function(){return Au.signInWithPopup(auth,new Au.GoogleAuthProvider())},
+  signOut:function(){return Au.signOut(auth)},
+  getAff:async function(uid){var d=await S.getDoc(S.doc(db,"affiliates",uid));return d.exists()?d.data():null},
+  createAff:async function(u,data,code){var b=S.writeBatch(db);b.set(S.doc(db,"codes",code),{uid:u.uid});b.set(S.doc(db,"affiliates",u.uid),Object.assign({},data,{code:code,uid:u.uid,email:u.email,creado:Date.now()}));await b.commit()},
+  listAff:async function(){var q=await S.getDocs(S.collection(db,"affiliates"));return q.docs.map(function(d){return d.data()})}
+ }}
+var AFI={fb:null,user:null,aff:null};
+function afiVista(h){$("afiBox").innerHTML='<button class="x" onclick="afiCerrar()" aria-label="Cerrar">✖</button>'+h}
+function afiMsg(t,ok){var e=$("afErr");if(e){e.textContent=t;e.className="aerr"+(ok?" ok":"")}}
+function afiCerrar(){$("afiOv").style.display="none"}
+function afiBase(){return location.origin+location.pathname.replace(/index\.html$/,"")}
+function afiGen(){var a="ABCDEFGHJKLMNPQRSTUVWXYZ23456789",r=new Uint8Array(5),s="";crypto.getRandomValues(r);for(var i=0;i<5;i++)s+=a[r[i]%a.length];return "AFI"+s}
+async function afiAbrir(){
+ $("afiOv").style.display="block";
+ if(AFI.fb){afiPintar();return}
+ afiVista("<h4>Programa de afiliados</h4><p>Cargando…</p>");
+ try{
+  AFI.fb=await fbCrear(D.firebase);
+  AFI.fb.onAuth(async function(u){AFI.user=u;AFI.aff=null;if(u){try{AFI.aff=await AFI.fb.getAff(u.uid)}catch(e){}}afiPintar()});
+ }catch(e){AFI.fb=null;afiVista('<h4>Programa de afiliados</h4><p class="aerr">No se pudo cargar el registro. Revisa tu internet e inténtalo de nuevo.</p>')}
+}
+function afiPintar(){
+ if(!AFI.user){
+  afiVista('<h4>⭐ Gana comisiones con EcoEnergi</h4><p>Entra con tu cuenta de Google, completa tus datos y recibe al instante tu enlace personal para compartir.</p><button class="wa" onclick="afiEntrar()">Continuar con Google</button><div id="afErr" class="aerr"></div><p style="font-size:12px;margin-top:8px">Si abriste la tienda desde otra app (WhatsApp, Instagram…) y Google no te deja entrar, ábrela en Chrome.</p>');return}
+ if(!AFI.aff){
+  var pn=(AFI.user.name||"").split(" ")[0];
+  afiVista('<h4>Hola'+(pn?', '+esc(pn):'')+' 👋</h4><p>Completa tus datos para recibir tu enlace de afiliado.</p>'+
+  '<label for="afN">Nombre completo</label><input id="afN" maxlength="80" autocomplete="name" value="'+esc(AFI.user.name||"")+'">'+
+  '<label for="afT">Teléfono / WhatsApp</label><input id="afT" type="tel" inputmode="tel" maxlength="20" autocomplete="tel" placeholder="53 5 123 4567">'+
+  '<label for="afP">¿Cómo quieres cobrar tu comisión?</label><select id="afP"><option value="">Elige…</option><option>Efectivo en persona</option><option>Transferencia a tarjeta</option><option>Otra forma</option></select>'+
+  '<label for="afC">Número de tarjeta o datos para cobrar (no hace falta si es en persona)</label><input id="afC" maxlength="60" inputmode="numeric">'+
+  '<p style="font-size:12px">Nunca escribas aquí el código de seguridad (CVV) ni contraseñas.</p>'+
+  '<label style="display:flex;gap:10px;align-items:flex-start;font-weight:500;font-size:13px"><input id="afOk" type="checkbox" style="width:22px;height:22px;margin:0;flex:none"> Acepto la comisión del '+esc(D.comision==null?3:D.comision)+'% por ventas confirmadas y el pago acordado.</label>'+
+  '<div id="afErr" class="aerr" style="margin-top:10px"></div><button class="wa" id="afGo" onclick="afiCrear()">Crear mi enlace</button><button class="wa sec2" onclick="afiSalir()">Salir</button>');return}
+ var code=AFI.aff.code,link=afiBase()+"?ref="+code;
+ afiVista('<h4>¡Listo'+(AFI.aff.nombre?', '+esc(AFI.aff.nombre.split(" ")[0]):'')+'! 🎉</h4><p>Este es tu enlace personal. Compártelo: cuando alguien compre por él, la venta queda a tu nombre.</p><div class="lnk">'+esc(link)+'</div><p>Tu código: <b>'+esc(code)+'</b></p>'+
+ '<button class="wa" onclick="afiCopiar()">📋 Copiar mi enlace</button>'+
+ '<a class="wa" style="margin-top:8px" target="_blank" rel="noopener" href="https://wa.me/?text='+encodeURIComponent("Mira esta tienda de energía solar: "+link)+'">💬 Compartir por WhatsApp</a>'+
+ '<div id="afErr" class="aerr" style="margin-top:8px"></div><button class="wa sec2" onclick="afiSalir()">Salir</button>');
+}
+async function afiEntrar(){afiMsg("Abriendo Google…",true);try{await AFI.fb.signIn()}catch(e){afiMsg("No se pudo entrar con Google. Si abriste la tienda desde otra app, ábrela en Chrome.")}}
+async function afiSalir(){try{await AFI.fb.signOut()}catch(e){}afiCerrar()}
+function afiCopiar(){var l=afiBase()+"?ref="+AFI.aff.code;try{navigator.clipboard.writeText(l).then(function(){afiMsg("✅ Enlace copiado",true)},function(){afiMsg("No se pudo copiar. Mantén pulsado el enlace y cópialo.")})}catch(e){afiMsg("No se pudo copiar. Mantén pulsado el enlace y cópialo.")}}
+async function afiCrear(){
+ var n=$("afN").value.trim(),t=$("afT").value.trim(),p=$("afP").value,c=$("afC").value.trim();
+ var err=n.length<2?"Escribe tu nombre.":!/^\d{8,15}$/.test(t.replace(/\D/g,""))?"Escribe un teléfono válido (de 8 a 15 números).":!p?"Elige cómo quieres cobrar.":(p!="Efectivo en persona"&&!c)?"Escribe el número de tarjeta o los datos para cobrar.":!$("afOk").checked?"Debes aceptar las condiciones.":"";
+ if(err){afiMsg(err);return}
+ $("afGo").disabled=true;afiMsg("Creando tu enlace…",true);
+ var data={nombre:n,telefono:t,pago:p,cobro:c},ok=false,last=null;
+ for(var i=0;i<6&&!ok;i++){try{await AFI.fb.createAff(AFI.user,data,afiGen());ok=true}catch(e){last=e}}
+ if(!ok){$("afGo").disabled=false;afiMsg("No se pudo crear tu enlace"+(last&&last.code?" ("+last.code+")":"")+". Inténtalo otra vez o escríbenos por WhatsApp.");return}
+ try{AFI.aff=await AFI.fb.getAff(AFI.user.uid)}catch(e){}
+ afiPintar();
+}
 </script>
 </body>
 </html>

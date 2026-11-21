@@ -38,6 +38,11 @@ button.b{font:inherit;cursor:pointer;border:0;border-radius:10px;padding:11px 14
 ol{margin:8px 0 8px 18px;font-size:13px;color:#d6dae2}
 li{margin:4px 0}
 [hidden]{display:none!important}
+textarea{width:100%;padding:11px;border-radius:9px;border:1px solid #ffffff2a;background:#0f1116;color:#fff;font-size:13px;font-family:ui-monospace,Menlo,monospace}textarea:focus{outline:2px solid var(--y)}
+.sigbox{background:#0f1116;border:2px dashed var(--y);border-radius:12px;padding:12px;margin:10px 0;word-break:break-all;font-size:13px;color:#fff}
+.sigbox b{display:block;color:var(--y);font-size:22px;margin:2px 0 6px}
+.sigbox small{color:var(--m);font-size:12px}
+.ar{display:flex;gap:8px;align-items:center;padding:7px 0;border-bottom:1px solid #ffffff14;font-size:14px}.ar span{flex:1}.ar.ok{opacity:.5}
 .pn{color:#fff;font-weight:700;margin:8px 0 2px;font-size:15px}
 .fb{display:flex;align-items:center;gap:12px;background:#0f1116;border:2px dashed var(--y);border-radius:12px;padding:10px;margin:10px 0;cursor:pointer;color:#fff;font-size:14px}
 .fp{width:84px;height:84px;border-radius:10px;background:#fff;display:grid;place-items:center;font-size:38px;overflow:hidden;flex:none}
@@ -99,6 +104,17 @@ li{margin:4px 0}
  </section>
 
  <section class="card">
+  <h2>🔥 Registro automático de afiliados</h2>
+  <p class="n">Pega aquí el bloque <b>firebaseConfig</b> de tu proyecto de Firebase. Con eso, quien se registre en la tienda con su cuenta de Google recibe su enlace al instante.</p>
+  <label for="fbc">Configuración de Firebase</label>
+  <textarea id="fbc" rows="7" placeholder='apiKey: "…",&#10;authDomain: "…",&#10;projectId: "…",&#10;appId: "…"' oninput="leerFb()"></textarea>
+  <p id="fbn" class="n"></p>
+  <button class="b b2" style="width:100%" onclick="afiVer()">👥 Ver afiliados registrados (entrar con Google)</button>
+  <input id="afq" type="text" placeholder="Buscar por código, nombre o teléfono" oninput="afiPintar()" style="margin-top:10px">
+  <div id="afl"></div>
+ </section>
+
+ <section class="card">
   <h2>📞 Contacto</h2>
   <label for="wa">WhatsApp (con código de país, solo números)</label>
   <input id="wa" type="text" inputmode="numeric" data-k="whatsapp">
@@ -108,12 +124,14 @@ li{margin:4px 0}
  </section>
 
  <section class="card">
-  <h2>🔗 Enlace para un afiliado</h2>
-  <p class="n">Escribe el código que le diste (letras y números, sin espacios) y copia su enlace para mandárselo.</p>
-  <label for="cod">Código del afiliado</label>
-  <input id="cod" type="text" placeholder="CARLOS01" maxlength="20" autocapitalize="characters" oninput="enlace()">
-  <p id="enl" class="n" style="word-break:break-all;color:#fff;margin-top:10px"></p>
-  <button class="b b2" style="width:100%" onclick="copiarEnlace()">📋 Copiar enlace</button>
+  <h2>🔗 Enlaces manuales (alternativa)</h2>
+  <p class="n">Úsalos solo si no activas el registro automático de arriba. Los enlaces están hechos, en orden: copia el siguiente y mándaselo por WhatsApp.</p>
+  <div id="sig" class="sigbox"></div>
+  <button class="b b1" style="width:100%" onclick="darSiguiente()">📋 Copiar y pasar al siguiente</button>
+  <div class="row" style="margin-top:8px"><button class="b b2" onclick="moverSig(-1)">↩ Volver al anterior</button><button class="b b2" onclick="moverSig(1)">Saltar este →</button></div>
+  <label for="tot">Cantidad de enlaces (1 a 500)</label>
+  <input id="tot" type="number" inputmode="numeric" min="1" max="500" step="1" data-k="afiliadosTotal">
+  <details style="margin-top:10px"><summary style="cursor:pointer;font-size:13px;color:var(--y)">Ver todos los enlaces</summary><div id="todos"></div></details>
  </section>
 </div>
 </main>
@@ -155,7 +173,7 @@ function mostrar(){
  if(!D.promo)D.promo={activa:false,texto:"",tramos:[]};if(!D.promo.tramos)D.promo.tramos=[];if(!D.productos)D.productos=[];
  $("login").hidden=true;$("panel").hidden=false;$("barra").hidden=false;$("salir").hidden=false;
  $("pact").checked=D.promo.activa!==false;$("ptxt").value=D.promo.texto||"";
- $("com").value=D.comision==null?"":D.comision;$("pag").value=D.pagoAfiliados||"";$("wa").value=D.whatsapp||"";$("fu").value=D.formularioAfiliados||"";
+ $("com").value=D.comision==null?"":D.comision;$("pag").value=D.pagoAfiliados||"";$("wa").value=D.whatsapp||"";$("fu").value=D.formularioAfiliados||"";if(D.afiliadosTotal==null)D.afiliadosTotal=50;if(D.afiliadosSig==null)D.afiliadosSig=0;$("tot").value=D.afiliadosTotal;enlaces();fbMostrar();
  lista();tramos();msg("");
 }
 var PREV={};
@@ -207,11 +225,48 @@ function delP(i){if(confirm("¿Quitar este producto de la tienda? (Si solo quier
 function addT(){D.promo.tramos.push({min:"",pct:""});dirty=true;tramos()}
 function delT(i){D.promo.tramos.splice(i,1);dirty=true;tramos()}
 
-function codigo(){return $("cod").value.replace(/[^A-Za-z0-9_-]/g,"").slice(0,20)}
-function enlace(){var c=codigo();$("enl").textContent=c?location.origin+location.pathname.replace(/admin\.html$/,"")+"?ref="+c:""}
-function copiarEnlace(){var t=$("enl").textContent;if(!t){msg("Escribe primero el código del afiliado.","err");return}
- var ok=function(){msg("✅ Enlace copiado.","ok")},no=function(){msg("No se pudo copiar. Mantén pulsado el enlace y cópialo.","err")};
- try{navigator.clipboard.writeText(t).then(ok,no)}catch(e){no()}}
+function baseUrl(){return location.origin+location.pathname.replace(/admin\.html$/,"")}
+function cod(n){return "AFI"+String(n+1).padStart(3,"0")}
+function tot(){var t=parseInt(D.afiliadosTotal,10);return(t>=1&&t<=500)?t:50}
+function sigN(){var s=parseInt(D.afiliadosSig,10);if(!(s>=0))s=0;return Math.min(s,tot())}
+function enlaces(){
+ var t=tot(),s=sigN(),rows="";
+ $("sig").innerHTML=s<t?'<small>Siguiente para entregar:</small><b>'+cod(s)+'</b>'+esc(baseUrl()+"?ref="+cod(s))+'<br><small>Entregados: '+s+' de '+t+'</small>':'<b>Ya entregaste los '+t+' enlaces</b><small>Sube la cantidad para tener más.</small>';
+ for(var i=0;i<t;i++)rows+='<div class="ar'+(i<s?' ok':'')+'"><span>'+cod(i)+(i<s?' ✔ entregado':'')+'</span><button class="b b2" style="padding:6px 12px" onclick="copiar('+i+')">Copiar</button></div>';
+ $("todos").innerHTML=rows;
+}
+function copiarTxt(t,okMsg){try{navigator.clipboard.writeText(t).then(function(){msg(okMsg,"ok")},function(){msg("No se pudo copiar. Prueba otra vez.","err")})}catch(e){msg("No se pudo copiar.","err")}}
+function copiar(i){copiarTxt(baseUrl()+"?ref="+cod(i),"✅ Copiado "+cod(i))}
+function darSiguiente(){var s=sigN();if(s>=tot()){msg("Ya entregaste todos los enlaces. Sube la cantidad.","err");return}
+ copiarTxt(baseUrl()+"?ref="+cod(s),"✅ Copiado "+cod(s)+". Pulsa “Guardar y publicar” para recordar cuál sigue.");D.afiliadosSig=s+1;dirty=true;enlaces()}
+function moverSig(d){var s=sigN()+d;if(s<0||s>tot())return;D.afiliadosSig=s;dirty=true;enlaces()}
+async function fbCrear(cfg){
+ if(window.__FB_MOCK)return window.__FB_MOCK;
+ var B="https://www.gstatic.com/firebasejs/10.12.2/";
+ var A=await import(B+"firebase-app.js"),Au=await import(B+"firebase-auth.js"),S=await import(B+"firebase-firestore.js");
+ var app=A.getApps().length?A.getApp():A.initializeApp(cfg),auth=Au.getAuth(app),db=S.getFirestore(app);
+ return{
+  onAuth:function(cb){return Au.onAuthStateChanged(auth,function(u){cb(u?{uid:u.uid,email:u.email,name:u.displayName||""}:null)})},
+  signIn:function(){return Au.signInWithPopup(auth,new Au.GoogleAuthProvider())},
+  signOut:function(){return Au.signOut(auth)},
+  getAff:async function(uid){var d=await S.getDoc(S.doc(db,"affiliates",uid));return d.exists()?d.data():null},
+  createAff:async function(u,data,code){var b=S.writeBatch(db);b.set(S.doc(db,"codes",code),{uid:u.uid});b.set(S.doc(db,"affiliates",u.uid),Object.assign({},data,{code:code,uid:u.uid,email:u.email,creado:Date.now()}));await b.commit()},
+  listAff:async function(){var q=await S.getDocs(S.collection(db,"affiliates"));return q.docs.map(function(d){return d.data()})}
+ }}
+var FBA=null,AFS=[];
+function parseFb(t){var o={};["apiKey","authDomain","projectId","storageBucket","messagingSenderId","appId","measurementId"].forEach(function(k){var m=new RegExp(k+"\\s*[:=]\\s*[\"']([^\"']+)[\"']").exec(t);if(m)o[k]=m[1]});return o}
+function leerFb(){var o=parseFb($("fbc").value);if(Object.keys(o).length)D.firebase=o;else delete D.firebase;dirty=true;$("fbn").textContent=o.projectId?"Proyecto detectado: "+o.projectId:""}
+function fbMostrar(){var f=D.firebase;$("fbc").value=f?Object.keys(f).map(function(k){return k+': "'+f[k]+'",'}).join("\n"):"";$("fbn").textContent=f&&f.projectId?"Proyecto configurado: "+f.projectId:"Todavía no está configurado.";
+ if(f&&f.apiKey)fbCrear(f).then(function(x){FBA=x}).catch(function(){})}
+function afiPintar(){var q=($("afq").value||"").toLowerCase().trim();
+ var L=AFS.filter(function(a){return !q||[a.code,a.nombre,a.telefono,a.email].join(" ").toLowerCase().indexOf(q)>-1});
+ $("afl").innerHTML=L.length?L.map(function(a){return '<div class="pc"><div class="ph"><b>'+esc(a.code)+'</b><span style="font-size:12px;color:var(--m)">'+esc(a.creado?new Date(a.creado).toLocaleDateString():"")+'</span></div><div class="pn">'+esc(a.nombre)+'</div><div class="n" style="margin:4px 0 0">📞 '+esc(a.telefono)+' · ✉️ '+esc(a.email)+'<br>💵 '+esc(a.pago)+(a.cobro?' · '+esc(a.cobro):'')+'</div></div>'}).join(""):'<p class="n" style="margin-top:10px">'+(AFS.length?'Sin resultados.':'Todavía no hay afiliados registrados.')+'</p>'}
+async function afiVer(){
+ var f=D.firebase;if(!f||!f.apiKey){msg("Primero pega la configuración de Firebase y vuelve a intentarlo.","err");return}
+ $("afl").innerHTML='<p class="n" style="margin-top:10px">Entrando con Google…</p>';
+ try{FBA=FBA||await fbCrear(f);await FBA.signIn();AFS=(await FBA.listAff()).sort(function(a,b){return (b.creado||0)-(a.creado||0)});afiPintar();msg("✅ "+AFS.length+" afiliado(s) registrados.","ok")}
+ catch(e){$("afl").innerHTML="";msg(e&&e.code=="permission-denied"?"Esa cuenta de Google no es la del dueño. Revisa el correo en las reglas de Firestore.":"No se pudo cargar la lista"+(e&&e.code?" ("+e.code+")":"")+".","err")}
+}
 function leer(e){
  var t=e.target,k=t.getAttribute&&t.getAttribute("data-k");if(!k)return;
  var i=t.getAttribute("data-i"),s=t.getAttribute("data-s");
@@ -219,7 +274,7 @@ function leer(e){
  if(s=="p"){D.productos[i][k]=v;if(k=="activo"){t.closest(".pc").className="pc"+(v?"":" off")}if(k=="nombre"){var pn=t.closest(".pc").querySelector(".pn");if(pn)pn.textContent=v||"Producto nuevo"}}
  else if(s=="t")D.promo.tramos[i][k]=v;
  else if(s=="promo")D.promo[k]=v;
- else D[k]=(k=="whatsapp"?String(v).replace(/\D/g,""):v);
+ else D[k]=(k=="whatsapp"?String(v).replace(/\D/g,""):v);if(k=="afiliadosTotal")enlaces();
  dirty=true;
 }
 document.addEventListener("input",leer);document.addEventListener("change",leer);
@@ -234,6 +289,9 @@ function validar(){
  for(var j=0;j<D.promo.tramos.length;j++){var t=D.promo.tramos[j];
   if(t.min===""||t.pct===""||+t.min<=0||+t.pct<=0||+t.pct>100)return "Descuento por monto #"+(j+1)+": revisa “Desde” (mayor que 0) y el % (entre 1 y 100)."}
  if(D.comision===""||isNaN(+D.comision)||+D.comision<0||+D.comision>100)return "La comisión debe estar entre 0 y 100.";
+ var tt=parseInt(D.afiliadosTotal,10);if(!(tt>=1&&tt<=500))return "La cantidad de enlaces debe estar entre 1 y 500.";
+ if($("fbc").value.trim()&&!D.firebase)return "No pude leer la configuración de Firebase. Pégala tal como sale en la consola.";
+ if(D.firebase&&!(D.firebase.apiKey&&D.firebase.authDomain&&D.firebase.projectId&&D.firebase.appId))return "A la configuración de Firebase le falta algo: necesito apiKey, authDomain, projectId y appId.";
  if(D.formularioAfiliados&&!/^https:\/\//i.test(String(D.formularioAfiliados).trim()))return "El enlace del formulario debe empezar con https://";
  if(!/^\d{8,15}$/.test(String(D.whatsapp||"")))return "El WhatsApp debe tener entre 8 y 15 números (con código de país).";
  return "";
@@ -241,7 +299,7 @@ function validar(){
 async function guardar(){
  var e=validar();if(e){msg("⚠️ "+e,"err");return}
  D.productos.forEach(function(p){p.id=+p.id;p.precio=+p.precio;p.antes=(p.antes===""||p.antes==null)?0:+p.antes});
- D.promo.tramos.forEach(function(t){t.min=+t.min;t.pct=+t.pct});D.comision=+D.comision;
+ D.promo.tramos.forEach(function(t){t.min=+t.min;t.pct=+t.pct});D.comision=+D.comision;D.afiliadosTotal=parseInt(D.afiliadosTotal,10);D.afiliadosSig=Math.min(Math.max(parseInt(D.afiliadosSig,10)||0,0),D.afiliadosTotal);
  $("guardar").disabled=true;msg("Publicando…");
  try{
   var body={message:"Admin: actualizar tienda",content:b64enc(JSON.stringify(D,null,2)+"\n"),branch:BR};if(SHA)body.sha=SHA;
