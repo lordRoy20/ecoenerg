@@ -113,6 +113,32 @@
       "foto": "p8-mwpyb6q7.jpg",
       "icono": "📦",
       "activo": true
+    },
+    {
+      "id": 9,
+      "cat": "Cables ",
+      "nombre": "Cableados ",
+      "desc": "100FT 10AWG",
+      "precio": 100,
+      "antes": 120,
+      "etiqueta": "Oferta",
+      "foto": "p9-mwq0ls6h.jpg",
+      "icono": "📦",
+      "activo": true
+    },
+    {
+      "id": 10,
+      "cat": "Conectores",
+      "nombre": "Conector",
+      "desc": "",
+      "precio": 50,
+      "antes": 70,
+      "etiqueta": "Oferta",
+      "foto": "p10-mwq0odhw.jpg",
+      "icono": "📦",
+      "activo": true
     }
-  ]
+  ],
+  "afiliadosTotal": 50,
+  "afiliadosSig": 0
 }
